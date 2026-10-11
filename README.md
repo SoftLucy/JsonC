@@ -26,25 +26,29 @@ C++20 (uses `std::variant`, `std::optional` and `std::map::contains`). Tested wi
 #include <iostream>
 
 int main() {
-    std::wstring text =
-        LR"({"name": "Sensor 1", "active": true, "values": [1, 2, 3]})";
+    auto jsonOpt = Json::tryParse(
+        LR"({"network": true, "port": 8080, "sensorName": "Temperature"})"
+    );
+    if (!jsonOpt) return 1;
+    auto json = jsonOpt.value();
 
-    auto root = Json::tryParse(text);
-    if (!root) {
-        std::wcerr << L"Invalid JSON\n";
-        return 1;
-    }
+    auto objectOpt = Json::try_if_JsonObject(json);
+    if (!objectOpt) return 1;
+    auto object = objectOpt.value();
+    auto map = object.m;
 
-    auto obj = Json::try_if_JsonObject(*root);
-    if (!obj) return 2;
-    auto& m = obj->m;
+    auto networkOpt = Json::try_if_bool(map[L"network"]);
+    auto portOpt = Json::try_if_Number(map[L"port"]);
+    auto nameOpt = Json::try_if_wstring(map[L"sensorName"]);
+    if (!networkOpt || !portOpt || !nameOpt) return 1;
 
-    std::wcout << *Json::try_if_wstring(m[L"name"]) << L"\n";   // Sensor 1
-    std::wcout << *Json::try_if_bool(m[L"active"]) << L"\n";    // 1
+    bool network = networkOpt.value();
+    long long port = portOpt.value();
+    std::wstring name = nameOpt.value();
 
-    if (auto values = Json::try_if_Vector(m[L"values"]))
-        for (auto& v : *values)
-            std::wcout << *Json::try_if_Number(v) << L" ";      // 1 2 3
+    std::wcout << L"Network: " << network << L'\n';
+    std::wcout << L"Port: " << port << L'\n';
+    std::wcout << L"Sensor: " << name << L'\n';
 }
 ```
 
