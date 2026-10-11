@@ -59,19 +59,9 @@ int main() {
 
 ## Design notes
 
-- `JsonValue` is a `std::variant<JsonObject, std::vector<JsonObject>, std::wstring, long long, float, bool, void *>`. A `std::variant` cannot contain itself, so array elements are wrapped in a `JsonObject` under an empty key and unwrapped again by `try_if_Vector`.
+- `JsonValue` is a `std::variant<JsonObject, std::vector<JsonObject>, std::wstring, long long, float, bool, void *>`. A `std::variant` cannot contain itself, so array elements are wrapped in a `JsonObject`.
 - Strings are `std::wstring`.
 - `null` is stored as a `void *` (`nullptr`).
-
-## Known limitations
-
-This is a learning project and still work in progress:
-
-- The functions are not marked `inline`, so include the header from one translation unit only.
-- Escape sequences in strings are kept as they are; `\uXXXX` is not decoded.
-- Numbers with a fraction or exponent are currently read as their integer prefix (`1.5` becomes `1`).
-- `to_String` writes booleans as `1`/`0`, does not escape strings, and does not yet handle nested objects.
-- The helper macros (`eat`, `text`, ...) are defined at global scope.
 
 ## License
 
